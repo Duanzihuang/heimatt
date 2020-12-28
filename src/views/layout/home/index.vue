@@ -2,7 +2,7 @@
   <div class="home-container">
     <van-nav-bar title="主页" fixed />
     <van-tabs sticky :offset-top="46" v-model="active">
-      <van-tab v-for="item in channels" :title="item.name" :key="item.id">
+      <van-tab v-for="item in channels" :title="item.name" :key="item.name">
         <van-pull-refresh v-model="item.isLoading" @refresh="onRefresh">
           <van-list
             v-model="item.loading"

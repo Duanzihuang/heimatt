@@ -31,9 +31,16 @@ const routes = [
           import(/* webpackChunkName: "layout" */ '../views/layout/home')
       },
       {
-        path: 'question',
+        path: 'search',
         component: () =>
-          import(/* webpackChunkName: "layout" */ '../views/layout/question')
+          import(/* webpackChunkName: "layout" */ '../views/layout/search')
+      },
+      {
+        path: 'search-result/:keyword',
+        component: () =>
+          import(
+            /* webpackChunkName: "layout" */ '../views/layout/search/result'
+          )
       },
       {
         path: 'video',
@@ -46,6 +53,10 @@ const routes = [
           import(/* webpackChunkName: "layout" */ '../views/layout/my')
       }
     ]
+  },
+  {
+    path: '/info',
+    component: () => import(/* webpackChunkName: "layout" */ '../views/info')
   }
 ]
 
