@@ -10,7 +10,7 @@
             finished-text="没有更多了"
             @load="onLoad"
           >
-            <van-cell v-for="subitem in item.articleList" :key="subitem.art_id">
+            <van-cell v-for="subitem in item.articleList" :key="subitem.title">
               <template #title>
                 <!-- 标题 -->
                 <h4>{{ subitem.title }}</h4>
@@ -44,7 +44,7 @@
       <van-icon name="bars" />
     </div>
     <!-- 频道弹出组件 -->
-    <channel ref="channelRef" :channels="channels" />
+    <channel ref="channelRef" :channels="channels" :activeIndex.sync="active" />
     <!-- 更多子组件 -->
     <more ref="moreRef" @dislike="dislike" />
   </div>
@@ -53,6 +53,7 @@
 <script>
 import { getChannels } from '@/api/channel'
 import { getArticleListById } from '@/api/article'
+import { localGet } from '@/utils/local'
 import channel from './components/channel'
 import more from './components/more'
 export default {
@@ -75,10 +76,28 @@ export default {
      * 获取频道列表
      */
     async getChannelsData () {
-      const res = await getChannels()
+      const tokenObj = localGet('heimatt_token')
+      const channelsObj = localGet('channels')
+
+      if (tokenObj && tokenObj.token) {
+        // 登录了，查询登录用户的频道信息
+        const res = await getChannels()
+
+        this.channels = res.data.channels
+      } else {
+        // 没有登录，先从本地查找
+        if (channelsObj) {
+          this.channels = channelsObj
+        } else {
+          // 本地没有，加载默认频道
+          const res = await getChannels()
+
+          this.channels = res.data.channels
+        }
+      }
 
       // 在channels中设置文章列表
-      res.data.channels.forEach(item => {
+      this.channels.forEach(item => {
         // item.articleList = [] // 文章列表
         // item.loading = false // 正在加载中
         // item.isLoading = false // 下拉刷新
@@ -89,8 +108,6 @@ export default {
         this.$set(item, 'isLoading', false)
         this.$set(item, 'finished', false)
       })
-
-      this.channels = res.data.channels
     },
     // 上拉加载触发
     async onLoad () {
@@ -100,6 +117,7 @@ export default {
 
       if (res.data.results.length === 0) {
         channel.articleList = []
+        channel.isLoading = false
         // 没有更多数据啦...
         channel.finished = true
       } else {
@@ -110,7 +128,12 @@ export default {
       }
     },
     // 下拉刷新
-    onRefresh () {},
+    onRefresh () {
+      const channel = this.channels[this.active]
+      channel.articleList = []
+
+      this.onLoad()
+    },
     showChannel () {
       this.$refs.channelRef.show = true
     },
@@ -136,7 +159,8 @@ export default {
 
 <style lang="less" scoped>
 .home-container {
-  position: relative;
+  margin-bottom: 50px;
+  margin-top: 46px;
 }
 .van-nav-bar {
   background-color: #3e9df8;
@@ -148,14 +172,15 @@ export default {
   padding-top: 46px;
 }
 .more {
-  position: absolute;
-  right: 0;
+  position: fixed;
   top: 46px;
-  height: 44px;
+  right: 0;
+  z-index: 9999;
   width: 10%;
-  z-index: 100;
+  height: 44px;
   background-color: pink;
   text-align: center;
+  line-height: 44px;
 }
 .van-icon-bars {
   font-size: 20px;
@@ -176,8 +201,6 @@ export default {
     span {
       margin-right: 10px;
     }
-  }
-  .right {
   }
 }
 </style>

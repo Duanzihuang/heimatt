@@ -46,7 +46,7 @@
 
 <script>
 import { suggestion } from '@/api/other'
-import { localSave, localGet } from '@/utils/local'
+import { localSet, localGet } from '@/utils/local'
 export default {
   data () {
     return {
@@ -88,7 +88,7 @@ export default {
       this.historyList = [...new Set(this.historyList)]
 
       // 保存到本地
-      localSave('history', JSON.stringify(this.historyList))
+      localSet('history', JSON.stringify(this.historyList))
 
       this.$router.push(`/layout/search-result/${val}`)
     },
@@ -99,13 +99,13 @@ export default {
     deleteHistory (index) {
       this.historyList.splice(index, 1)
       // 保存到本地
-      localSave('history', JSON.stringify(this.historyList))
+      localSet('history', JSON.stringify(this.historyList))
     },
     // 清空搜索历史
     clearHistory () {
       this.historyList = []
       // 保存到本地
-      localSave('history', JSON.stringify(this.historyList))
+      localSet('history', JSON.stringify(this.historyList))
     }
   }
 }

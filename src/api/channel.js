@@ -17,3 +17,16 @@ export const getAllChannels = () => {
     url: '/app/v1_0/channels'
   })
 }
+
+/**
+ * 批量修改用户频道列表（重置式）
+ */
+export const updateChannels = channels => {
+  return request({
+    url: '/app/v1_0/user/channels',
+    method: 'PUT',
+    data: {
+      channels
+    }
+  })
+}

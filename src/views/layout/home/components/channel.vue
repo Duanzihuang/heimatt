@@ -32,6 +32,7 @@
           class="crossf"
           v-for="(item, index) in channels"
           :key="item.name"
+          @click="channelClick(index)"
         >
           <template #text>
             <!-- 频道文字 -->
@@ -62,9 +63,11 @@
 </template>
 
 <script>
-import { getAllChannels } from '@/api/channel'
+import { getAllChannels, updateChannels } from '@/api/channel'
+import { localSet, localGet } from '@/utils/local'
 export default {
   props: {
+    activeIndex: Number, // 激活的索引
     channels: {
       type: Array,
       default: function () {
@@ -78,6 +81,11 @@ export default {
       allChannels: [], // 所有频道
       isEdit: false, // 是否编辑
       active: 0 // 正在编辑的我的频道的索引
+    }
+  },
+  watch: {
+    activeIndex () {
+      this.active = this.activeIndex
     }
   },
   computed: {
@@ -104,13 +112,44 @@ export default {
 
       this.allChannels = res.data.channels
     },
+    channelClick (index) {
+      this.$emit('update:activeIndex', index)
+    },
     // 添加频道到我的频道
     addChannel (item) {
       this.channels.push(item)
+      // 给item动态设置响应式属性
+      this.$set(item, 'loading', false)
+      this.$set(item, 'finished', false)
+      this.$set(item, 'isLoading', false)
+      this.$set(item, 'articleList', [])
+
+      this.saveChannel()
     },
     // 把我们的频道删除
     deleteChannel (index) {
       this.channels.splice(index, 1)
+
+      this.saveChannel()
+    },
+    // 保存频道
+    async saveChannel () {
+      const token = localGet('heimatt_token')
+
+      if (token && token.token) {
+        const channels = this.channels.slice(1).map((item, index) => {
+          return {
+            id: item.id,
+            seq: index + 2
+          }
+        })
+
+        await updateChannels(channels)
+        // 登录了
+      } else {
+        // 未登录，保存到本地
+        localSet('channels', this.channels)
+      }
     }
   }
 }

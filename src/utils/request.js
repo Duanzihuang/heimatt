@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { getToken, removeToken } from './token'
+import { removeToken } from './token'
+import { localGet } from './local'
 import router from '@/router'
 import JSONbig from 'json-bigint'
 
@@ -17,10 +18,15 @@ const request = axios.create({
 // 请求拦截
 request.interceptors.request.use(
   function (config) {
-    const token = getToken()
-    if (token) {
-      config.headers.authorization = `Bearer ${JSON.parse(token).token}`
+    // const token = getToken()
+    // if (token) {
+    //   config.headers.authorization = `Bearer ${JSON.parse(token).token}`
+    // }
+    const tokenObj = localGet('heimatt_token')
+    if (tokenObj && tokenObj.token) {
+      config.headers.authorization = `Bearer ${tokenObj.token}`
     }
+
     return config
   },
   function (error) {
